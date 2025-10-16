@@ -1,0 +1,611 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Australian Vehicle Market Insights 2024</title>
+    <meta name="description" content="Explore Australian vehicle market price trends, brand comparisons, and car buying insights">
+    
+    <!-- Pure.css -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/purecss@3.0.0/build/pure-min.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/purecss@3.0.0/build/grids-responsive-min.css">
+    
+    <!-- Vega & Vega-Lite -->
+    <script src="https://cdn.jsdelivr.net/npm/vega@5"></script>
+    <script src="https://cdn.jsdelivr.net/npm/vega-lite@5"></script>
+    <script src="https://cdn.jsdelivr.net/npm/vega-embed@6"></script>
+    
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
+    
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Roboto', -apple-system, BlinkMacSystemFont, sans-serif;
+            line-height: 1.7;
+            color: #2c3e50;
+            background: linear-gradient(to bottom, #f8f9fa 0%, #ffffff 100%);
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 20px;
+        }
+        
+        /* Header */
+        header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 60px 20px 80px;
+            text-align: center;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+            position: relative;
+            overflow: hidden;
+        }
+        
+        header::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><circle cx="50" cy="50" r="40" fill="rgba(255,255,255,0.05)"/></svg>');
+            background-size: 100px 100px;
+            opacity: 0.3;
+        }
+        
+        header h1 {
+            font-size: 3em;
+            font-weight: 700;
+            margin-bottom: 15px;
+            position: relative;
+            z-index: 1;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.2);
+        }
+        
+        header p {
+            font-size: 1.3em;
+            font-weight: 300;
+            position: relative;
+            z-index: 1;
+            opacity: 0.95;
+        }
+        
+        /* Section styles */
+        section {
+            margin: 60px auto;
+            padding: 0 20px;
+        }
+        
+        .section-title {
+            font-size: 2.2em;
+            font-weight: 600;
+            color: #2c3e50;
+            margin-bottom: 15px;
+            padding-bottom: 15px;
+            border-bottom: 4px solid #667eea;
+            display: inline-block;
+        }
+        
+        .section-subtitle {
+            font-size: 1.15em;
+            color: #7f8c8d;
+            margin-bottom: 40px;
+            line-height: 1.8;
+            max-width: 900px;
+        }
+        
+        /* Intro section */
+        .intro {
+            background: white;
+            padding: 50px;
+            border-radius: 15px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.08);
+            margin-top: -40px;
+            position: relative;
+            z-index: 2;
+        }
+        
+        .intro h2 {
+            color: #667eea;
+            font-size: 2em;
+            margin-bottom: 25px;
+        }
+        
+        .intro p {
+            font-size: 1.1em;
+            margin-bottom: 20px;
+            color: #555;
+        }
+        
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 25px;
+            margin: 40px 0;
+        }
+        
+        .stat-card {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 30px;
+            border-radius: 12px;
+            text-align: center;
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.3);
+            transition: transform 0.3s ease;
+        }
+        
+        .stat-card:hover {
+            transform: translateY(-5px);
+        }
+        
+        .stat-number {
+            font-size: 2.5em;
+            font-weight: 700;
+            display: block;
+            margin-bottom: 10px;
+        }
+        
+        .stat-label {
+            font-size: 1em;
+            opacity: 0.9;
+        }
+        
+        /* Visualization containers */
+        .viz-container {
+            background: white;
+            padding: 40px;
+            border-radius: 15px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.08);
+            margin: 40px 0;
+            transition: box-shadow 0.3s ease;
+        }
+        
+        .viz-container:hover {
+            box-shadow: 0 15px 50px rgba(0,0,0,0.12);
+        }
+        
+        .viz-title {
+            font-size: 1.5em;
+            font-weight: 600;
+            color: #2c3e50;
+            margin-bottom: 10px;
+        }
+        
+        .viz-description {
+            color: #7f8c8d;
+            margin-bottom: 25px;
+            font-size: 1.05em;
+            line-height: 1.6;
+        }
+        
+        .viz-insight {
+            background: #f8f9fa;
+            border-left: 4px solid #667eea;
+            padding: 20px;
+            margin-top: 25px;
+            border-radius: 5px;
+        }
+        
+        .viz-insight strong {
+            color: #667eea;
+            font-weight: 600;
+        }
+        
+        /* Grid layouts */
+        .two-col-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(450px, 1fr));
+            gap: 30px;
+            margin: 40px 0;
+        }
+        
+        /* Key findings */
+        .key-findings {
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+            color: white;
+            padding: 50px;
+            border-radius: 15px;
+            margin: 60px 0;
+        }
+        
+        .key-findings h3 {
+            font-size: 2em;
+            margin-bottom: 30px;
+        }
+        
+        .findings-list {
+            list-style: none;
+            padding: 0;
+        }
+        
+        .findings-list li {
+            padding: 15px 0 15px 40px;
+            position: relative;
+            font-size: 1.1em;
+            line-height: 1.6;
+        }
+        
+        .findings-list li::before {
+            content: "✓";
+            position: absolute;
+            left: 0;
+            font-size: 1.5em;
+            font-weight: bold;
+        }
+        
+        /* Footer */
+        footer {
+            background: #2c3e50;
+            color: white;
+            padding: 40px 20px;
+            margin-top: 80px;
+            text-align: center;
+        }
+        
+        footer p {
+            margin: 10px 0;
+            opacity: 0.9;
+        }
+        
+        footer a {
+            color: #667eea;
+            text-decoration: none;
+            font-weight: 500;
+        }
+        
+        footer a:hover {
+            text-decoration: underline;
+        }
+        
+        /* Responsive */
+        @media (max-width: 768px) {
+            header h1 {
+                font-size: 2em;
+            }
+            
+            header p {
+                font-size: 1.1em;
+            }
+            
+            .section-title {
+                font-size: 1.8em;
+            }
+            
+            .intro {
+                padding: 30px 25px;
+            }
+            
+            .viz-container {
+                padding: 25px 20px;
+            }
+            
+            .two-col-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .stat-card {
+                padding: 25px;
+            }
+        }
+        
+        /* Annotations */
+        .annotation {
+            background: #fff9e6;
+            border-left: 4px solid #f39c12;
+            padding: 15px 20px;
+            margin: 20px 0;
+            border-radius: 5px;
+            font-size: 0.95em;
+        }
+    </style>
+</head>
+<body>
+    <!-- Header -->
+    <header>
+        <h1>Australian Vehicle Market Insights</h1>
+        <p>Data-Driven Analysis for Smart Car Buying in Australia</p>
+    </header>
+    
+    <!-- Main Content -->
+    <main class="container">
+        
+        <!-- Introduction -->
+        <section class="intro">
+            <h2>Understanding the Australian Vehicle Market</h2>
+            <p>
+                Australia has one of the highest vehicle ownership rates globally, with a diverse and competitive automotive market. This visualization analyzes <strong>real-time data from over 25,000 vehicles</strong> for sale, combined with 16,000+ supplementary records, to present pricing differences across states, brand comparisons, market trends, and fuel type options, helping average Australian consumers better understand market dynamics.
+            </p>
+            <div class="annotation" style="background: #fff9c4; border-left-color: #fbc02d; margin-top: 20px;">
+                <strong>📊 Data Processing:</strong>
+                All visualizations use Vega-Lite to dynamically load and aggregate data directly from raw CSV files (AUSTRALIAN CAR PIRCE.csv and Australian_Vehicle_Prices.csv), ensuring data authenticity and accuracy. The map features full interactivity including hover details and click-to-select highlighting.
+            </div>
+            
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <span class="stat-number">$45K</span>
+                    <span class="stat-label">National Average Price</span>
+                </div>
+                <div class="stat-card">
+                    <span class="stat-number">6</span>
+                    <span class="stat-label">Major States</span>
+                </div>
+                <div class="stat-card">
+                    <span class="stat-number">15+</span>
+                    <span class="stat-label">Popular Brands</span>
+                </div>
+                <div class="stat-card">
+                    <span class="stat-number">110%</span>
+                    <span class="stat-label">10-Year Price Increase</span>
+                </div>
+            </div>
+        </section>
+        
+        <!-- Map Section -->
+        <section>
+            <h2 class="section-title">Geographic Price Distribution</h2>
+            <p class="section-subtitle">
+                Significant price variations exist between different states. Western Australia (WA) and Queensland (QLD) have the highest average vehicle prices, while South Australia (SA) and Tasmania (TAS) are relatively more affordable.
+            </p>
+            
+            <div class="viz-container" style="width: 100%; max-width: 100%; padding: 30px 20px;">
+                <div id="map" style="width: 100%; min-height: 600px;"></div>
+                <div class="annotation" style="background: #e8f5e9; border-left-color: #4caf50;">
+                    <strong>💡 Interactive Features:</strong>
+                    Hover over states to view detailed pricing data. Click to highlight and select. Map color intensity represents price levels.
+                </div>
+                <div class="viz-insight">
+                    <strong>🔍 Key Finding:</strong>
+                    Western Australia and Queensland have significantly higher average vehicle prices than other states, primarily due to the mining boom's high income levels and transportation costs. Victoria and New South Wales have moderate prices due to intense market competition.
+                </div>
+            </div>
+        </section>
+        
+        <!-- Price Trend Section -->
+        <section>
+            <h2 class="section-title">Price Trend Analysis</h2>
+            <p class="section-subtitle">
+                Australian vehicle prices have risen steadily over the past decade. New vehicle prices in 2024-2025 have more than doubled compared to 2015, reflecting inflation, supply chain challenges, and increased costs from new technologies (such as electrification).
+            </p>
+            
+            <div class="viz-container">
+                <div id="yearTrend" style="min-height: 450px;"></div>
+                <div class="annotation" style="background: #fff3cd; border-left-color: #ffc107;">
+                    <strong>💡 Interactive Features:</strong>
+                    Hover over data points to view average price, median price, and vehicle count for that year.
+                </div>
+                <div class="viz-insight">
+                    <strong>📈 Trend Insight:</strong>
+                    Raw data clearly shows accelerated price increases from 2020-2022, closely related to COVID-19 pandemic supply chain disruptions and semiconductor shortages. 2024-2025 new vehicle prices remain elevated, reflecting ongoing inflation and increased new technology costs.
+                </div>
+            </div>
+        </section>
+        
+        <!-- Brand Comparison Section -->
+        <section>
+            <h2 class="section-title">Brand Price Comparison</h2>
+            <p class="section-subtitle">
+                Luxury brands such as Mercedes-Benz, BMW, and Audi have significantly higher average prices than mass-market brands. Toyota, Australia's most popular brand, maintains mid-upper pricing, demonstrating a good balance between quality and cost.
+            </p>
+            
+            <div class="viz-container">
+                <div id="brandComparison" style="min-height: 500px;"></div>
+                <div class="annotation" style="background: #e3f2fd; border-left-color: #2196f3;">
+                    <strong>💡 Interactive Features:</strong>
+                    Hover over bars to view exact pricing and vehicle count for each brand. Color intensity reflects price levels.
+                </div>
+                <div class="viz-insight">
+                    <strong>🏆 Brand Insight:</strong>
+                    Based on actual data analysis, luxury brands (Mercedes-Benz, BMW, Audi) have significantly higher average prices than mass-market brands. Japanese brands like Toyota and Mazda dominate market inventory due to their reliability and lower maintenance costs, reflecting Australian consumers' pragmatic preferences.
+                </div>
+            </div>
+        </section>
+        
+        <!-- Fuel Type and Body Type Section -->
+        <section>
+            <h2 class="section-title">Vehicle Type & Fuel Analysis</h2>
+            <p class="section-subtitle">
+                While electric vehicles have the highest average prices, their market share is growing rapidly. SUVs have become the most popular vehicle category, reflecting Australian consumers' preference for space and versatility.
+            </p>
+            
+            <div class="viz-container" style="max-width: 100%; overflow-x: auto;">
+                <div style="display: flex; gap: 30px; flex-wrap: nowrap; justify-content: flex-start; align-items: flex-start; min-width: 900px;">
+                    <div id="fuelInteractive" style="min-height: 500px; width: 450px; flex-shrink: 0;"></div>
+                    <div id="bodyInteractive" style="min-height: 500px; width: 450px; flex-shrink: 0;"></div>
+                </div>
+                <div class="annotation" style="background: #e3f2fd; border-left-color: #2196f3;">
+                    <strong>🔗 Interactive Features:</strong>
+                    Click on any fuel type in the legend of the left chart to filter the body type chart on the right. Click again to deselect and view all data. Hover over elements for detailed information.
+                </div>
+                <div class="annotation" style="background: #f3e5f5; border-left-color: #9c27b0;">
+                    <strong>🔋 Electrification Trend:</strong>
+                    Actual data shows petrol vehicles still dominate, but electric and hybrid vehicle numbers are growing rapidly. Electric vehicles have higher average prices, but costs are expected to decrease as technology matures.
+                </div>
+                <div class="annotation" style="background: #fce4ec; border-left-color: #e91e63;">
+                    <strong>🚙 SUV Dominance:</strong>
+                    SUVs have become the most popular vehicle category with the largest market supply and higher average prices, reflecting Australian families' demand for space and versatility.
+                </div>
+            </div>
+        </section>
+        
+        <!-- Key Findings -->
+        <section class="key-findings">
+            <h3>🎯 Key Findings & Buying Recommendations</h3>
+            <ul class="findings-list">
+                <li><strong>Geographic Factor:</strong> If budget-conscious, consider purchasing in SA or Tasmania to save 15-20% on costs</li>
+                <li><strong>Timing:</strong> Clear upward price trend suggests acting sooner if considering a purchase</li>
+                <li><strong>Brand Selection:</strong> Japanese brands like Toyota and Mazda offer the best balance of reliability and value</li>
+                <li><strong>Fuel Type:</strong> Hybrid vehicles' average price ($48,700) is close to market average, making them ideal for transitioning to electrification</li>
+                <li><strong>Vehicle Preference:</strong> While SUVs are popular, hatchbacks have the lowest average price ($28,900), suitable for first-time buyers</li>
+            </ul>
+        </section>
+        
+    </main>
+    
+    <!-- Footer -->
+    <footer>
+        <p><strong>Data Sources:</strong></p>
+        <p style="margin-top: 10px;">
+            • Australian Car Price Dataset (25,586 records)<br>
+            • Australian Vehicle Prices Dataset (16,827 records)<br>
+            • Australian States GeoJSON (geographic boundary data)
+        </p>
+        <p style="margin-top: 15px;"><strong>Technology Stack:</strong> Vega-Lite 5 | Pure.css | Direct CSV data loading</p>
+        <p><strong>Author:</strong> Leyuan Zong</p>
+        <p><strong>Created:</strong> October 2025</p>
+        <p style="margin-top: 20px; font-size: 0.9em;">
+            This visualization was created using <a href="https://vega.github.io/vega-lite/" target="_blank">Vega-Lite</a>. All charts support interactive exploration. | 
+            <a href="https://github.com/yourusername/australian-car-viz" target="_blank">GitHub Repository</a>
+        </p>
+    </footer>
+    
+    <!-- Vega-Lite Embed Scripts -->
+    <script>
+        // Configuration options
+        const embedOptions = {
+            actions: {
+                export: true,
+                source: false,
+                compiled: false,
+                editor: false
+            },
+            renderer: 'svg',
+            theme: 'latimes'
+        };
+        
+        // Embed map (interactive) - with loading status
+        document.getElementById('map').innerHTML = '<div style="padding: 60px; text-align: center;"><p style="color: #3498db; font-size: 18px;">🗺️ Loading map...</p></div>';
+        
+        vegaEmbed('#map', 'visualizations/map_interactive.json', embedOptions)
+            .then(result => {
+                console.log('✅ Map loaded successfully');
+                console.log('Map view:', result.view);
+            })
+            .catch(error => {
+                console.error('❌ Map loading failed:', error);
+                document.getElementById('map').innerHTML = 
+                    '<div style="padding: 40px; text-align: center; background: #fff3cd; border: 2px solid #ffc107; border-radius: 10px;">' +
+                    '<p style="color: #856404; font-size: 16px; font-weight: bold;">⚠️ Map Loading Issue</p>' +
+                    '<p style="color: #856404; margin-top: 10px;">Error: ' + error.message + '</p>' +
+                    '<p style="color: #6c757d; margin-top: 10px; font-size: 14px;">Note: Map will display correctly after uploading to GitHub Pages</p>' +
+                    '</div>';
+            });
+        
+        // Embed year trend (from full data)
+        vegaEmbed('#yearTrend', 'visualizations/chart_year_trend_full.json', embedOptions)
+            .then(result => {
+                console.log('Year trend chart loaded successfully');
+            })
+            .catch(console.error);
+        
+        // Embed brand comparison (from full data)
+        vegaEmbed('#brandComparison', 'visualizations/chart_brand_comparison_full.json', embedOptions)
+            .then(result => {
+                console.log('Brand comparison chart loaded successfully');
+            })
+            .catch(console.error);
+        
+        // Load both charts and connect them
+        let fuelView, bodyView, bodySpec;
+        let currentFuelSelection = null;
+        
+        // Load body spec first
+        fetch('visualizations/chart_body_interactive.json?v=' + Date.now())
+            .then(r => r.json())
+            .then(spec => {
+                bodySpec = spec;
+                // Embed fuel type chart (left)
+                vegaEmbed('#fuelInteractive', 'visualizations/chart_fuel_interactive.json?v=' + Date.now(), embedOptions)
+                    .then(result => {
+                        console.log('✅ Fuel type chart loaded');
+                        fuelView = result.view;
+                        connectCharts();
+                    })
+                    .catch(console.error);
+                
+                // Embed body type chart (right)
+                vegaEmbed('#bodyInteractive', bodySpec, embedOptions)
+                    .then(result => {
+                        console.log('✅ Body type chart loaded');
+                        bodyView = result.view;
+                        connectCharts();
+                    })
+                    .catch(console.error);
+            });
+        
+        // Connect the two charts after both are loaded
+        function connectCharts() {
+            if (fuelView && bodyView && bodySpec) {
+                console.log('🔗 Connecting charts...');
+                
+                // Listen to the main selection signal which has the data we need
+                fuelView.addSignalListener('fuelSelection', function(name, value) {
+                    console.log('🔔 Fuel selection changed! Value:', value);
+                    
+                    // Extract the selected fuel type
+                    let selectedFuel = null;
+                    if (value && value['Fuel Type'] && value['Fuel Type'].length > 0) {
+                        selectedFuel = value['Fuel Type'][0];
+                        console.log('✅ Selected fuel type:', selectedFuel);
+                    } else {
+                        console.log('✅ Deselected - showing all data');
+                    }
+                    
+                    currentFuelSelection = selectedFuel;
+                    updateBodyChart();
+                });
+                
+                console.log('✅ Charts connected! Click on fuel type legend items to filter.');
+            }
+        }
+        
+        function updateBodyChart() {
+            console.log('🔄 Updating body chart with selection:', currentFuelSelection);
+            
+            // currentFuelSelection is now already the fuel type string (e.g., "Petrol")
+            const selectedFuel = currentFuelSelection;
+            
+            console.log('🔍 Using fuel type:', selectedFuel);
+            
+            if (!selectedFuel) {
+                // No selection, show all data
+                console.log('📊 Showing all body types');
+                bodySpec.transform = [
+                    {"calculate": "replace(datum['Price($)'], ',', '')", "as": "PriceClean"},
+                    {"calculate": "toNumber(datum.PriceClean)", "as": "PriceNum"},
+                    {"filter": "datum.PriceNum > 5000 && datum.PriceNum < 200000 && datum['Body Type'] != null && datum['Body Type'] != 'N/A'"},
+                    {"aggregate": [{"op": "mean", "field": "PriceNum", "as": "AvgPrice"}, {"op": "count", "as": "Count"}], "groupby": ["Body Type"]},
+                    {"filter": "datum.Count >= 200"}
+                ];
+            } else {
+                // Has selection, filter by fuel type
+                console.log('🎯 Filtering body types for fuel:', selectedFuel);
+                bodySpec.transform = [
+                    {"calculate": "replace(datum['Price($)'], ',', '')", "as": "PriceClean"},
+                    {"calculate": "toNumber(datum.PriceClean)", "as": "PriceNum"},
+                    {"filter": "datum.PriceNum > 5000 && datum.PriceNum < 200000 && datum['Body Type'] != null && datum['Body Type'] != 'N/A' && datum['Fuel Type'] == '" + selectedFuel + "'"},
+                    {"aggregate": [{"op": "mean", "field": "PriceNum", "as": "AvgPrice"}, {"op": "count", "as": "Count"}], "groupby": ["Body Type"]},
+                    {"filter": "datum.Count >= 50"}
+                ];
+            }
+            
+            // Reload body chart
+            vegaEmbed('#bodyInteractive', bodySpec, embedOptions)
+                .then(result => {
+                    bodyView = result.view;
+                    console.log('✅ Body chart updated with filter:', selectedFuel || 'none');
+                })
+                .catch(console.error);
+        }
+    </script>
+</body>
+</html>

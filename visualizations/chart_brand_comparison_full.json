@@ -1,0 +1,104 @@
+{
+  "$schema": "https://vega.github.io/schema/vega-lite/v5.json",
+  "title": {
+    "text": "Average Price Comparison - Top 15 Brands",
+    "fontSize": 20,
+    "font": "sans-serif",
+    "fontWeight": "bold",
+    "color": "#2c3e50"
+  },
+  "width": 750,
+  "height": 450,
+  "data": {"url": "data/AUSTRALIAN CAR PIRCE.csv"},
+  "transform": [
+    {
+      "calculate": "replace(datum['Price($)'], ',', '')",
+      "as": "PriceClean"
+    },
+    {
+      "calculate": "toNumber(datum.PriceClean)",
+      "as": "PriceNum"
+    },
+    {
+      "filter": "datum.PriceNum > 5000 && datum.PriceNum < 200000"
+    },
+    {
+      "aggregate": [
+        {"op": "mean", "field": "PriceNum", "as": "AvgPrice"},
+        {"op": "count", "as": "Count"}
+      ],
+      "groupby": ["Marks"]
+    },
+    {
+      "filter": "datum.Count >= 50"
+    },
+    {
+      "window": [{"op": "rank", "as": "rank"}],
+      "sort": [{"field": "Count", "order": "descending"}]
+    },
+    {
+      "filter": "datum.rank <= 15"
+    }
+  ],
+  "mark": {
+    "type": "bar",
+    "cornerRadiusEnd": 6,
+    "opacity": 0.9,
+    "cursor": "pointer"
+  },
+  "encoding": {
+    "x": {
+      "field": "AvgPrice",
+      "type": "quantitative",
+      "title": "Average Price (AUD)",
+      "axis": {
+        "format": "$,.0f",
+        "grid": true,
+        "gridOpacity": 0.3,
+        "labelFontSize": 12,
+        "titleFontSize": 14
+      }
+    },
+    "y": {
+      "field": "Marks",
+      "type": "nominal",
+      "title": null,
+      "sort": "-x",
+      "axis": {
+        "labelAngle": 0,
+        "labelFontSize": 13,
+        "labelLimit": 150
+      }
+    },
+    "color": {
+      "field": "AvgPrice",
+      "type": "quantitative",
+      "scale": {
+        "scheme": "viridis"
+      },
+      "legend": null
+    },
+    "opacity": {
+      "condition": {"param": "hover", "value": 1},
+      "value": 0.8
+    },
+    "tooltip": [
+      {"field": "Marks", "type": "nominal", "title": "Brand"},
+      {"field": "AvgPrice", "type": "quantitative", "title": "Average Price", "format": "$,.0f"},
+      {"field": "Count", "type": "quantitative", "title": "Vehicles for Sale", "format": ","}
+    ]
+  },
+  "params": [
+    {
+      "name": "hover",
+      "select": {"type": "point", "on": "mouseover"}
+    }
+  ],
+  "config": {
+    "view": {"stroke": null},
+    "axis": {
+      "labelColor": "#555",
+      "titleColor": "#333"
+    }
+  }
+}

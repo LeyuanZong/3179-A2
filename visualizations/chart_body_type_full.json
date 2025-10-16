@@ -1,0 +1,118 @@
+{
+  "$schema": "https://vega.github.io/schema/vega-lite/v5.json",
+  "title": {
+    "text": "Body Type: Price vs. Quantity",
+    "fontSize": 18,
+    "font": "sans-serif",
+    "fontWeight": "bold",
+    "color": "#2c3e50"
+  },
+  "width": 380,
+  "height": 380,
+  "data": {"url": "data/AUSTRALIAN CAR PIRCE.csv"},
+  "transform": [
+    {
+      "calculate": "replace(datum['Price($)'], ',', '')",
+      "as": "PriceClean"
+    },
+    {
+      "calculate": "toNumber(datum.PriceClean)",
+      "as": "PriceNum"
+    },
+    {
+      "filter": "datum.PriceNum > 5000 && datum.PriceNum < 200000 && datum['Body Type'] != null && datum['Body Type'] != 'N/A'"
+    },
+    {
+      "aggregate": [
+        {"op": "mean", "field": "PriceNum", "as": "AvgPrice"},
+        {"op": "count", "as": "Count"}
+      ],
+      "groupby": ["Body Type"]
+    },
+    {
+      "filter": "datum.Count >= 200"
+    }
+  ],
+  "mark": {
+    "type": "circle",
+    "opacity": 0.85,
+    "cursor": "pointer"
+  },
+  "encoding": {
+    "x": {
+      "field": "Count",
+      "type": "quantitative",
+      "title": "Vehicles for Sale",
+      "axis": {
+        "format": ",",
+        "grid": true,
+        "gridOpacity": 0.3,
+        "labelFontSize": 11
+      },
+      "scale": {
+        "zero": true,
+        "type": "log"
+      }
+    },
+    "y": {
+      "field": "AvgPrice",
+      "type": "quantitative",
+      "title": "Average Price (AUD)",
+      "axis": {
+        "format": "$,.0f",
+        "grid": true,
+        "gridOpacity": 0.3,
+        "labelFontSize": 11
+      }
+    },
+    "size": {
+      "field": "Count",
+      "type": "quantitative",
+      "scale": {
+        "range": [500, 4000]
+      },
+      "legend": null
+    },
+    "color": {
+      "field": "Body Type",
+      "type": "nominal",
+      "title": "Body Type",
+      "scale": {
+        "scheme": "category10"
+      },
+      "legend": {
+        "orient": "bottom",
+        "labelFontSize": 12,
+        "titleFontSize": 13,
+        "symbolSize": 120,
+        "columns": 3
+      }
+    },
+    "opacity": {
+      "condition": {"param": "hover", "value": 1},
+      "value": 0.7
+    },
+    "strokeWidth": {
+      "condition": {"param": "hover", "value": 3},
+      "value": 0
+    },
+    "stroke": {
+      "condition": {"param": "hover", "value": "#2c3e50"},
+      "value": null
+    },
+    "tooltip": [
+      {"field": "Body Type", "type": "nominal", "title": "Body Type"},
+      {"field": "AvgPrice", "type": "quantitative", "title": "Average Price", "format": "$,.0f"},
+      {"field": "Count", "type": "quantitative", "title": "Vehicle Count", "format": ","}
+    ]
+  },
+  "params": [
+    {
+      "name": "hover",
+      "select": {"type": "point", "on": "mouseover"}
+    }
+  ],
+  "config": {
+    "view": {"stroke": null}
+  }
+}

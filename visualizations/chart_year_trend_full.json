@@ -1,0 +1,124 @@
+{
+  "$schema": "https://vega.github.io/schema/vega-lite/v5.json",
+  "title": {
+    "text": "Vehicle Price Trend (2015-2025)",
+    "fontSize": 20,
+    "font": "sans-serif",
+    "fontWeight": "bold",
+    "color": "#2c3e50"
+  },
+  "width": 750,
+  "height": 400,
+  "data": {"url": "data/AUSTRALIAN CAR PIRCE.csv"},
+  "transform": [
+    {
+      "calculate": "replace(datum['Price($)'], ',', '')",
+      "as": "PriceClean"
+    },
+    {
+      "calculate": "toNumber(datum.PriceClean)",
+      "as": "PriceNum"
+    },
+    {
+      "calculate": "toNumber(datum.Year)",
+      "as": "YearNum"
+    },
+    {
+      "filter": "datum.YearNum >= 2015 && datum.YearNum <= 2025 && datum.PriceNum > 5000 && datum.PriceNum < 200000"
+    },
+    {
+      "aggregate": [
+        {"op": "mean", "field": "PriceNum", "as": "AvgPrice"},
+        {"op": "median", "field": "PriceNum", "as": "MedianPrice"},
+        {"op": "count", "as": "Count"}
+      ],
+      "groupby": ["YearNum"]
+    }
+  ],
+  "layer": [
+    {
+      "mark": {
+        "type": "area",
+        "line": true,
+        "point": false,
+        "opacity": 0.25,
+        "color": "#3498db",
+        "interpolate": "monotone"
+      },
+      "encoding": {
+        "x": {
+          "field": "YearNum",
+          "type": "quantitative",
+          "title": "Year",
+          "axis": {
+            "labelAngle": 0,
+            "labelFontSize": 12,
+            "format": "d",
+            "tickCount": 11
+          },
+          "scale": {"domain": [2015, 2025]}
+        },
+        "y": {
+          "field": "AvgPrice",
+          "type": "quantitative",
+          "title": "Average Price (AUD)",
+          "axis": {
+            "format": "$,.0f",
+            "grid": true,
+            "gridOpacity": 0.3,
+            "labelFontSize": 12,
+            "titleFontSize": 14
+          }
+        }
+      }
+    },
+    {
+      "mark": {
+        "type": "line",
+        "strokeWidth": 4,
+        "color": "#2980b9",
+        "interpolate": "monotone"
+      },
+      "encoding": {
+        "x": {"field": "YearNum", "type": "quantitative"},
+        "y": {"field": "AvgPrice", "type": "quantitative"}
+      }
+    },
+    {
+      "mark": {
+        "type": "point",
+        "filled": true,
+        "size": 150,
+        "color": "#2980b9",
+        "cursor": "pointer"
+      },
+      "encoding": {
+        "x": {"field": "YearNum", "type": "quantitative"},
+        "y": {"field": "AvgPrice", "type": "quantitative"},
+        "opacity": {
+          "condition": {"param": "hover", "value": 1},
+          "value": 0.8
+        },
+        "size": {
+          "condition": {"param": "hover", "value": 250},
+          "value": 150
+        },
+        "tooltip": [
+          {"field": "YearNum", "type": "quantitative", "title": "Year", "format": "d"},
+          {"field": "AvgPrice", "type": "quantitative", "title": "Average Price", "format": "$,.0f"},
+          {"field": "MedianPrice", "type": "quantitative", "title": "Median Price", "format": "$,.0f"},
+          {"field": "Count", "type": "quantitative", "title": "Vehicle Count", "format": ","}
+        ]
+      },
+      "params": [
+        {
+          "name": "hover",
+          "select": {"type": "point", "on": "mouseover"}
+        }
+      ]
+    }
+  ],
+  "config": {
+    "view": {"stroke": null}
+  }
+}

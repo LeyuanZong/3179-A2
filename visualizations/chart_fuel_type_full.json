@@ -1,0 +1,85 @@
+{
+  "$schema": "https://vega.github.io/schema/vega-lite/v5.json",
+  "title": {
+    "text": "Fuel Type Distribution & Pricing",
+    "fontSize": 18,
+    "font": "sans-serif",
+    "fontWeight": "bold",
+    "color": "#2c3e50"
+  },
+  "width": 380,
+  "height": 380,
+  "data": {"url": "data/AUSTRALIAN CAR PIRCE.csv"},
+  "transform": [
+    {
+      "calculate": "replace(datum['Price($)'], ',', '')",
+      "as": "PriceClean"
+    },
+    {
+      "calculate": "toNumber(datum.PriceClean)",
+      "as": "PriceNum"
+    },
+    {
+      "filter": "datum.PriceNum > 5000 && datum.PriceNum < 200000 && datum['Fuel Type'] != null"
+    },
+    {
+      "aggregate": [
+        {"op": "mean", "field": "PriceNum", "as": "AvgPrice"},
+        {"op": "count", "as": "Count"}
+      ],
+      "groupby": ["Fuel Type"]
+    },
+    {
+      "filter": "datum.Count >= 100"
+    }
+  ],
+  "mark": {
+    "type": "arc",
+    "innerRadius": 90,
+    "outerRadius": 160,
+    "stroke": "white",
+    "strokeWidth": 3,
+    "cursor": "pointer",
+    "padAngle": 0.02
+  },
+  "encoding": {
+    "theta": {
+      "field": "Count",
+      "type": "quantitative",
+      "stack": true
+    },
+    "color": {
+      "field": "Fuel Type",
+      "type": "nominal",
+      "title": "Fuel Type",
+      "scale": {
+        "domain": ["Petrol", "Diesel", "Hybrid", "Electric"],
+        "range": ["#e74c3c", "#34495e", "#27ae60", "#3498db"]
+      },
+      "legend": {
+        "orient": "right",
+        "labelFontSize": 13,
+        "titleFontSize": 14,
+        "symbolSize": 150
+      }
+    },
+    "opacity": {
+      "condition": {"param": "hover", "value": 1},
+      "value": 0.85
+    },
+    "tooltip": [
+      {"field": "Fuel Type", "type": "nominal", "title": "Fuel Type"},
+      {"field": "AvgPrice", "type": "quantitative", "title": "Average Price", "format": "$,.0f"},
+      {"field": "Count", "type": "quantitative", "title": "Vehicle Count", "format": ","}
+    ]
+  },
+  "params": [
+    {
+      "name": "hover",
+      "select": {"type": "point", "on": "mouseover"}
+    }
+  ],
+  "view": {
+    "stroke": null
+  }
+}

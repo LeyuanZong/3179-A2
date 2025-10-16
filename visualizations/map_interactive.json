@@ -1,0 +1,158 @@
+{
+  "$schema": "https://vega.github.io/schema/vega-lite/v5.json",
+  "title": {
+    "text": "Average Vehicle Prices by Australian State",
+    "fontSize": 24,
+    "fontWeight": "bold",
+    "color": "#2c3e50",
+    "dy": -10
+  },
+  "width": "container",
+  "height": 600,
+  "autosize": {
+    "type": "fit",
+    "contains": "padding"
+  },
+  "projection": {
+    "type": "mercator",
+    "center": [133, -28],
+    "scale": 700
+  },
+  "layer": [
+    {
+      "data": {
+        "url": "https://raw.githubusercontent.com/tonywr71/GeoJson-Data/master/australian-states.json",
+        "format": {"type": "json", "property": "features"}
+      },
+      "mark": {
+        "type": "geoshape",
+        "fill": "lightgray",
+        "stroke": "white",
+        "strokeWidth": 2
+      }
+    },
+    {
+      "data": {"url": "data/AUSTRALIAN CAR PIRCE.csv"},
+      "transform": [
+        {
+          "calculate": "replace(datum['Price($)'], ',', '')",
+          "as": "PriceClean"
+        },
+        {
+          "calculate": "toNumber(datum.PriceClean)",
+          "as": "PriceNum"
+        },
+        {
+          "filter": "datum.PriceNum > 5000 && datum.PriceNum < 200000"
+        },
+        {
+          "aggregate": [
+            {"op": "mean", "field": "PriceNum", "as": "AvgPrice"},
+            {"op": "median", "field": "PriceNum", "as": "MedianPrice"},
+            {"op": "count", "as": "Count"}
+          ],
+          "groupby": ["City"]
+        },
+        {
+          "lookup": "City",
+          "from": {
+            "data": {
+              "url": "https://raw.githubusercontent.com/tonywr71/GeoJson-Data/master/australian-states.json",
+              "format": {"type": "json", "property": "features"}
+            },
+            "key": "properties.STATE_NAME",
+            "fields": ["type", "properties", "geometry"]
+          }
+        },
+        {
+          "filter": "datum.geometry != null"
+        }
+      ],
+      "params": [
+        {
+          "name": "state_hover",
+          "select": {"type": "point", "on": "mouseover", "clear": "mouseout"}
+        },
+        {
+          "name": "state_select",
+          "select": {"type": "point"}
+        }
+      ],
+      "mark": {
+        "type": "geoshape",
+        "stroke": "white",
+        "strokeWidth": 2,
+        "cursor": "pointer"
+      },
+      "encoding": {
+        "color": {
+          "field": "AvgPrice",
+          "type": "quantitative",
+          "scale": {
+            "scheme": "blues",
+            "domain": [30000, 60000]
+          },
+          "legend": {
+            "title": "Average Price (AUD)",
+            "orient": "bottom-right",
+            "direction": "vertical",
+            "gradientLength": 250,
+            "titleFontSize": 14,
+            "labelFontSize": 12,
+            "format": "$,.0f"
+          }
+        },
+        "strokeWidth": {
+          "condition": [
+            {"param": "state_select", "empty": false, "value": 5},
+            {"param": "state_hover", "empty": false, "value": 4}
+          ],
+          "value": 2
+        },
+        "opacity": {
+          "condition": [
+            {"param": "state_select", "value": 1},
+            {"param": "state_hover", "value": 0.95}
+          ],
+          "value": 0.85
+        },
+        "tooltip": [
+          {"field": "City", "type": "nominal", "title": "State"},
+          {"field": "AvgPrice", "type": "quantitative", "title": "Average Price", "format": "$,.0f"},
+          {"field": "MedianPrice", "type": "quantitative", "title": "Median Price", "format": "$,.0f"},
+          {"field": "Count", "type": "quantitative", "title": "Vehicle Count", "format": ","}
+        ]
+      }
+    },
+    {
+      "data": {
+        "values": [
+          {"state": "Queensland", "lat": -20, "lon": 145, "code": "QLD"},
+          {"state": "New South Wales", "lat": -32, "lon": 147, "code": "NSW"},
+          {"state": "Victoria", "lat": -37, "lon": 144, "code": "VIC"},
+          {"state": "South Australia", "lat": -30, "lon": 135, "code": "SA"},
+          {"state": "Western Australia", "lat": -25, "lon": 122, "code": "WA"},
+          {"state": "Tasmania", "lat": -42, "lon": 147, "code": "TAS"},
+          {"state": "Northern Territory", "lat": -19, "lon": 133, "code": "NT"},
+          {"state": "Australian Capital Territory", "lat": -35.3, "lon": 149, "code": "ACT"}
+        ]
+      },
+      "mark": {
+        "type": "text",
+        "fontSize": 16,
+        "fontWeight": "bold",
+        "color": "#2c3e50",
+        "opacity": 0.9
+      },
+      "encoding": {
+        "longitude": {"field": "lon", "type": "quantitative"},
+        "latitude": {"field": "lat", "type": "quantitative"},
+        "text": {"field": "code", "type": "nominal"}
+      }
+    }
+  ],
+  "config": {
+    "view": {"stroke": null},
+    "background": "#f8f9fa"
+  }
+}
